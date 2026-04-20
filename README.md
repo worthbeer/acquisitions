@@ -214,6 +214,124 @@ npm run dev     # development with file watching
 
 ---
 
+## Docker
+
+The project ships with separate compose files for development and production. Both use the same `Dockerfile` with a multi-stage build — `development` target for local work, `production` target for deployment.
+
+```
+Dockerfile                 # multi-stage: development + production targets
+docker-compose.dev.yml     # app + Neon Local proxy
+docker-compose.prod.yml    # app only, points to Neon cloud
+.env.development           # local env vars (copy and fill in)
+.env.production            # production env vars (never commit real values)
+```
+
+---
+
+### Development (Neon Local)
+
+Neon Local is a Docker proxy that creates an **ephemeral branch** of your Neon cloud database on startup and deletes it on shutdown — so every dev session starts clean without touching your real data.
+
+**1. Fill in `.env.development`**
+
+```env
+NODE_ENV=development
+PORT=3000
+
+DATABASE_URL=postgres://neon:npg@neon-local:5432/acquisitions
+
+NEON_API_KEY=your_neon_api_key        # from neon.tech → Account Settings
+NEON_PROJECT_ID=your_neon_project_id  # from neon.tech → Project Settings
+NEON_PARENT_BRANCH_ID=                # optional: branch to fork from
+JWT_SECRET=dev-secret-change-in-production
+```
+
+**2. Start the stack**
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+This starts two containers:
+- `neon-local` — proxy on port `5432`, creates an ephemeral branch from `NEON_PARENT_BRANCH_ID`
+- `app` — Express API on port `3000`, auto-reloads on file changes via `node --watch`
+
+**3. Run migrations against the local branch**
+
+```bash
+# Run inside the app container
+docker compose -f docker-compose.dev.yml exec app npm run db:migrate
+```
+
+**4. Tear down**
+
+```bash
+docker compose -f docker-compose.dev.yml down
+```
+
+Neon Local automatically deletes the ephemeral branch on shutdown.
+
+---
+
+### How the dev database connection works
+
+The `@neondatabase/serverless` driver normally sends HTTP queries to Neon's cloud. In development, `src/config/database.js` redirects those requests to the local proxy:
+
+```js
+if (process.env.NODE_ENV !== 'production') {
+    neonConfig.fetchEndpoint = 'http://neon-local:5432';
+    neonConfig.useSecureWebSocket = false;
+    neonConfig.poolQueryViaFetch = true;
+}
+```
+
+`DATABASE_URL` uses the Docker service name `neon-local` as the host — this resolves inside the compose network automatically.
+
+---
+
+### Production (Neon Cloud)
+
+**1. Fill in `.env.production`**
+
+```env
+NODE_ENV=production
+PORT=3000
+DATABASE_URL=postgres://<user>:<password>@<host>.neon.tech/<dbname>?sslmode=require
+JWT_SECRET=a-long-random-secret-min-32-chars
+```
+
+> Never commit `.env.production` with real credentials. Inject secrets via your CI/CD platform (GitHub Actions secrets, Railway, Render, Fly.io env vars, etc.).
+
+**2. Build and start**
+
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+The production image uses `npm ci --omit=dev` to exclude dev dependencies and runs `node src/index.js` directly — no file watcher overhead.
+
+**3. Run migrations in production**
+
+```bash
+docker compose -f docker-compose.prod.yml exec app npm run db:migrate
+```
+
+---
+
+### Environment Variable Summary
+
+| Variable | Dev | Prod | Description |
+|---|---|---|---|
+| `NODE_ENV` | `development` | `production` | Controls neonConfig and logging |
+| `PORT` | `3000` | `3000` | HTTP port |
+| `DATABASE_URL` | `postgres://neon:npg@neon-local:5432/acquisitions` | Neon cloud URL | DB connection string |
+| `NEON_API_KEY` | Required (for Neon Local container) | Not needed | Neon account API key |
+| `NEON_PROJECT_ID` | Required (for Neon Local container) | Not needed | Neon project ID |
+| `NEON_PARENT_BRANCH_ID` | Optional | Not needed | Branch to fork ephemeral dev branch from |
+| `JWT_SECRET` | Any string | Strong random secret | Signs JWT tokens |
+
+---
+
 ## License
 
 ISC
