@@ -25,7 +25,8 @@
     "db:migrate:dev": "cross-env DATABASE_URL=postgres://neon:npg@localhost:5432/neondb drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "dev:docker": "sh scripts/dev.sh",
-    "prod:docker": "sh ./scripts/prod.sh"
+    "prod:docker": "sh ./scripts/prod.sh",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",
@@ -60,6 +61,8 @@
     "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
-    "prettier": "^3.8.2"
+    "jest": "^30.3.0",
+    "prettier": "^3.8.2",
+    "supertest": "^7.2.2"
   }
 }

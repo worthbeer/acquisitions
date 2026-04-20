@@ -1,0 +1,61 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        id: tests
+        env:
+          NODE_ENV: test
+          NODE_OPTIONS: --experimental-vm-modules
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+        run: npm test
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+      - name: Write step summary
+        if: always()
+        run: |
+          if [ "${{ steps.tests.outcome }}" == "success" ]; then
+            echo "## ✅ Tests passed" >> $GITHUB_STEP_SUMMARY
+            if [ -f coverage/coverage-summary.json ]; then
+              LINES=$(node -e "const c=require('./coverage/coverage-summary.json').total; console.log(\`Lines: \${c.lines.pct}% | Statements: \${c.statements.pct}% | Functions: \${c.functions.pct}% | Branches: \${c.branches.pct}%\`)")
+              echo "$LINES" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "## ❌ Tests failed" >> $GITHUB_STEP_SUMMARY
+            echo "Check the logs above for details." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Annotate test failure
+        if: steps.tests.outcome == 'failure'
+        run: |
+          echo "::error::One or more tests failed. Review the test output above."
+          exit 1
