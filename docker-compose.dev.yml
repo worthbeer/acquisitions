@@ -2,14 +2,14 @@ services:
   neon-local:
     image: neondatabase/neon_local:latest
     ports:
-      - "5432:5432"
+      - '5432:5432'
     env_file:
       - .env.development
     environment:
       # neon-local expects PARENT_BRANCH_ID, not NEON_PARENT_BRANCH_ID
       PARENT_BRANCH_ID: ${NEON_PARENT_BRANCH_ID:-}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U neon"]
+      test: ['CMD-SHELL', 'pg_isready -h localhost -p 5432 -U neon']
       interval: 5s
       timeout: 5s
       retries: 15
@@ -20,7 +20,7 @@ services:
       context: .
       target: development
     ports:
-      - "3000:3000"
+      - '3000:3000'
     env_file:
       - .env.development
     environment:

@@ -18,18 +18,18 @@ A production-ready RESTful authentication API built with **Node.js**, **Express 
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js (ESM) |
-| Framework | Express 5 |
-| Database | Neon Serverless PostgreSQL |
-| ORM | Drizzle ORM |
-| Validation | Zod |
-| Auth | JSON Web Tokens (jsonwebtoken) |
-| Password Hashing | bcrypt |
-| Logging | Winston, Morgan |
-| Security | Helmet, CORS |
-| Linting/Formatting | ESLint, Prettier |
+| Layer              | Technology                     |
+| ------------------ | ------------------------------ |
+| Runtime            | Node.js (ESM)                  |
+| Framework          | Express 5                      |
+| Database           | Neon Serverless PostgreSQL     |
+| ORM                | Drizzle ORM                    |
+| Validation         | Zod                            |
+| Auth               | JSON Web Tokens (jsonwebtoken) |
+| Password Hashing   | bcrypt                         |
+| Logging            | Winston, Morgan                |
+| Security           | Helmet, CORS                   |
+| Linting/Formatting | ESLint, Prettier               |
 
 ---
 
@@ -62,12 +62,12 @@ src/
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/auth/sign-up` | Register a new user |
-| `POST` | `/api/auth/sign-in` | Authenticate and receive a JWT cookie |
-| `POST` | `/api/auth/sign-out` | Clear the auth cookie |
-| `GET` | `/health` | Health check |
+| Method | Endpoint             | Description                           |
+| ------ | -------------------- | ------------------------------------- |
+| `POST` | `/api/auth/sign-up`  | Register a new user                   |
+| `POST` | `/api/auth/sign-in`  | Authenticate and receive a JWT cookie |
+| `POST` | `/api/auth/sign-out` | Clear the auth cookie                 |
+| `GET`  | `/health`            | Health check                          |
 
 ### Sign Up
 
@@ -83,6 +83,7 @@ src/
 ```
 
 Response `201`:
+
 ```json
 {
   "message": "User Registered successfully",
@@ -107,6 +108,7 @@ Response `201`:
 ```
 
 Response `200` + `Set-Cookie: token=<jwt>; HttpOnly`:
+
 ```json
 {
   "message": "Signed in successfully",
@@ -124,6 +126,7 @@ Response `200` + `Set-Cookie: token=<jwt>; HttpOnly`:
 **`POST /api/auth/sign-out`**
 
 Response `200`:
+
 ```json
 {
   "message": "Signed out successfully"
@@ -202,15 +205,15 @@ npm run dev     # development with file watching
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start server with `--watch` |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Auto-fix lint issues |
-| `npm run format` | Format with Prettier |
+| Command               | Description                 |
+| --------------------- | --------------------------- |
+| `npm run dev`         | Start server with `--watch` |
+| `npm run lint`        | Run ESLint                  |
+| `npm run lint:fix`    | Auto-fix lint issues        |
+| `npm run format`      | Format with Prettier        |
 | `npm run db:generate` | Generate Drizzle migrations |
-| `npm run db:migrate` | Run migrations |
-| `npm run db:studio` | Open Drizzle Studio |
+| `npm run db:migrate`  | Run migrations              |
+| `npm run db:studio`   | Open Drizzle Studio         |
 
 ---
 
@@ -253,6 +256,7 @@ docker compose -f docker-compose.dev.yml up --build
 ```
 
 This starts two containers:
+
 - `neon-local` — proxy on port `5432`, creates an ephemeral branch from `NEON_PARENT_BRANCH_ID`
 - `app` — Express API on port `3000`, auto-reloads on file changes via `node --watch`
 
@@ -279,9 +283,9 @@ The `@neondatabase/serverless` driver normally sends HTTP queries to Neon's clou
 
 ```js
 if (process.env.NODE_ENV !== 'production') {
-    neonConfig.fetchEndpoint = 'http://neon-local:5432';
-    neonConfig.useSecureWebSocket = false;
-    neonConfig.poolQueryViaFetch = true;
+  neonConfig.fetchEndpoint = 'http://neon-local:5432';
+  neonConfig.useSecureWebSocket = false;
+  neonConfig.poolQueryViaFetch = true;
 }
 ```
 
@@ -320,15 +324,15 @@ docker compose -f docker-compose.prod.yml exec app npm run db:migrate
 
 ### Environment Variable Summary
 
-| Variable | Dev | Prod | Description |
-|---|---|---|---|
-| `NODE_ENV` | `development` | `production` | Controls neonConfig and logging |
-| `PORT` | `3000` | `3000` | HTTP port |
-| `DATABASE_URL` | `postgres://neon:npg@neon-local:5432/acquisitions` | Neon cloud URL | DB connection string |
-| `NEON_API_KEY` | Required (for Neon Local container) | Not needed | Neon account API key |
-| `NEON_PROJECT_ID` | Required (for Neon Local container) | Not needed | Neon project ID |
-| `NEON_PARENT_BRANCH_ID` | Optional | Not needed | Branch to fork ephemeral dev branch from |
-| `JWT_SECRET` | Any string | Strong random secret | Signs JWT tokens |
+| Variable                | Dev                                                | Prod                 | Description                              |
+| ----------------------- | -------------------------------------------------- | -------------------- | ---------------------------------------- |
+| `NODE_ENV`              | `development`                                      | `production`         | Controls neonConfig and logging          |
+| `PORT`                  | `3000`                                             | `3000`               | HTTP port                                |
+| `DATABASE_URL`          | `postgres://neon:npg@neon-local:5432/acquisitions` | Neon cloud URL       | DB connection string                     |
+| `NEON_API_KEY`          | Required (for Neon Local container)                | Not needed           | Neon account API key                     |
+| `NEON_PROJECT_ID`       | Required (for Neon Local container)                | Not needed           | Neon project ID                          |
+| `NEON_PARENT_BRANCH_ID` | Optional                                           | Not needed           | Branch to fork ephemeral dev branch from |
+| `JWT_SECRET`            | Any string                                         | Strong random secret | Signs JWT tokens                         |
 
 ---
 
