@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "paths": {
+      "#config/*": ["./src/config/*"],
+      "#services/*": ["./src/services/*"],
+      "#controllers/*": ["./src/controllers/*"],
+      "#middleware/*": ["./src/middleware/*"],
+      "#models/*": ["./src/models/*"],
+      "#routes/*": ["./src/routes/*"],
+      "#utils/*": ["./src/utils/*"],
+      "#validations/*": ["./src/validations/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
